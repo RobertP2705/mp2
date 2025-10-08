@@ -12,7 +12,7 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const response = await axios({
-          url: 'https://api.quotable.io/random',
+          url: 'www.themealdb.com/api/json/v1/1/search.php?s=Arrabiata',
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
