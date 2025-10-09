@@ -55,26 +55,24 @@ const ListView = () => {
   };
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredMeals(allMeals);
-      return;
+    let filtered = allMeals;
+    
+    if (searchTerm.trim()) {
+      filtered = allMeals.filter(meal =>
+        meal.strMeal.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        meal.strCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        meal.strArea.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-    const filtered = allMeals.filter(meal =>
-      meal.strMeal.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meal.strCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meal.strArea.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredMeals(filtered);
-  }, [searchTerm, allMeals]);
-
-  useEffect(() => {
-    const sorted = [...filteredMeals].sort((a, b) => {
+    
+    const sorted = [...filtered].sort((a, b) => {
       const aValue = a[sortProperty]?.toLowerCase() || '';
       const bValue = b[sortProperty]?.toLowerCase() || '';
       return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     });
+    
     setFilteredMeals(sorted);
-  }, [sortProperty, sortOrder]);
+  }, [searchTerm, allMeals, sortProperty, sortOrder]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,28 +91,41 @@ const ListView = () => {
   }; 
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', textAlign: 'center' }}>
       <h2>list view</h2>
       
-      <form onSubmit={handleSearch}>
+      <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="search meals"
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginRight: '10px' }}
         />
-        <button type="submit" disabled={loading}>
+        <button 
+          type="submit" 
+          disabled={loading}
+          style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#007bff', color: 'white' }}
+        >
           {loading ? 'loading...' : 'search'}
         </button>
       </form>
 
       {filteredMeals.length > 0 && (
-        <div>
+        <div style={{ marginBottom: '20px' }}>
           <h4>sort by:</h4>
           {['strMeal', 'strCategory', 'strArea'].map(property => (
             <button
               key={property}
               onClick={() => handleSortChange(property)}
+              style={{ 
+                margin: '5px', 
+                padding: '8px 16px', 
+                borderRadius: '8px', 
+                border: 'none', 
+                backgroundColor: sortProperty === property ? '#007bff' : '#6c757d', 
+                color: 'white' 
+              }}
             >
               {property === 'strMeal' ? 'name' : property === 'strCategory' ? 'category' : 'area'}
               {sortProperty === property && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
@@ -123,24 +134,36 @@ const ListView = () => {
         </div>
       )}
 
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {error && <div style={{ color: 'red', padding: '10px', borderRadius: '8px', backgroundColor: '#ffe6e6', margin: '10px auto', maxWidth: '400px' }}>{error}</div>}
       {loading && <p>loading meals...</p>}
 
       {filteredMeals.length > 0 && (
         <div>
           <h3>results ({filteredMeals.length})</h3>
-          {filteredMeals.map((meal) => (
-            <Link key={meal.idMeal} to={`/detail/${meal.idMeal}`}>
-              <div style={{ border: '1px solid #ccc', margin: '10px 0', padding: '10px' }}>
-                <img src={meal.strMealThumb} alt={meal.strMeal} width="100" height="100" />
-                <div>
-                  <h4>{meal.strMeal}</h4>
-                  <p>category: {meal.strCategory}</p>
-                  <p>area: {meal.strArea}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+            {filteredMeals.map((meal) => (
+              <Link key={meal.idMeal} to={`/detail/${meal.idMeal}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ 
+                  border: '1px solid #ccc', 
+                  padding: '15px', 
+                  borderRadius: '12px', 
+                  backgroundColor: '#fff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  maxWidth: '500px',
+                  width: '100%'
+                }}>
+                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                    <img src={meal.strMealThumb} alt={meal.strMeal} width="100" height="100" style={{ borderRadius: '8px' }} />
+                    <div style={{ textAlign: 'left' }}>
+                      <h4 style={{ margin: '0 0 8px 0' }}>{meal.strMeal}</h4>
+                      <p style={{ margin: '4px 0' }}>category: {meal.strCategory}</p>
+                      <p style={{ margin: '4px 0' }}>area: {meal.strArea}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -221,23 +244,40 @@ const GalleryView = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', textAlign: 'center' }}>
       <h2>gallery view</h2>
       
-      <div>
-        <button onClick={fetchAllMeals} disabled={loading}>
+      <div style={{ marginBottom: '20px' }}>
+        <button 
+          onClick={fetchAllMeals} 
+          disabled={loading}
+          style={{ 
+            padding: '10px 20px', 
+            borderRadius: '8px', 
+            border: 'none', 
+            backgroundColor: '#28a745', 
+            color: 'white' 
+          }}
+        >
           {loading ? 'loading...' : 'load all meals'}
         </button>
       </div>
 
       {availableCategories.length > 0 && (
-        <div>
+        <div style={{ marginBottom: '20px' }}>
           <h4>filter by category:</h4>
           {availableCategories.map(category => (
             <button
               key={category}
               onClick={() => handleCategoryToggle(category)}
-              style={{ backgroundColor: selectedCategories.includes(category) ? 'blue' : 'gray' }}
+              style={{ 
+                margin: '5px', 
+                padding: '8px 16px', 
+                borderRadius: '8px', 
+                border: 'none', 
+                backgroundColor: selectedCategories.includes(category) ? '#007bff' : '#6c757d', 
+                color: 'white' 
+              }}
             >
               {category}
             </button>
@@ -245,20 +285,33 @@ const GalleryView = () => {
         </div>
       )}
 
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {error && <div style={{ color: 'red', padding: '10px', borderRadius: '8px', backgroundColor: '#ffe6e6', margin: '10px auto', maxWidth: '400px' }}>{error}</div>}
       {loading && <p>loading meals...</p>}
 
       {filteredMeals.length > 0 && (
         <div>
           <h3>gallery ({filteredMeals.length})</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+            gap: '20px',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
             {filteredMeals.map((meal) => (
-              <Link key={meal.idMeal} to={`/detail/${meal.idMeal}`}>
-                <div style={{ border: '1px solid #ccc', padding: '10px' }}>
-                  <img src={meal.strMealThumb} alt={meal.strMeal} width="100%" height="150" />
-                  <h4>{meal.strMeal}</h4>
-                  <p>category: {meal.strCategory}</p>
-                  <p>area: {meal.strArea}</p>
+              <Link key={meal.idMeal} to={`/detail/${meal.idMeal}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ 
+                  border: '1px solid #ccc', 
+                  padding: '15px', 
+                  borderRadius: '12px', 
+                  backgroundColor: '#fff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  textAlign: 'center'
+                }}>
+                  <img src={meal.strMealThumb} alt={meal.strMeal} width="100%" height="200" style={{ borderRadius: '8px', objectFit: 'cover' }} />
+                  <h4 style={{ margin: '10px 0 5px 0' }}>{meal.strMeal}</h4>
+                  <p style={{ margin: '2px 0' }}>category: {meal.strCategory}</p>
+                  <p style={{ margin: '2px 0' }}>area: {meal.strArea}</p>
                 </div>
               </Link>
             ))}
@@ -370,30 +423,56 @@ const DetailView = () => {
   const ingredients = getIngredients(meal);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <button onClick={() => navigate('/')}>← back to home</button>
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', maxWidth: '800px', margin: '0 auto 20px auto' }}>
+        <button 
+          onClick={() => navigate('/')}
+          style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#6c757d', color: 'white' }}
+        >
+          ← back to home
+        </button>
         <div>
-          <button onClick={goToPrevious}>← previous</button>
-          <button onClick={goToNext}>next →</button>
+          <button 
+            onClick={goToPrevious}
+            style={{ padding: '10px 15px', borderRadius: '8px', border: 'none', backgroundColor: '#007bff', color: 'white', marginRight: '10px' }}
+          >
+            ← previous
+          </button>
+          <button 
+            onClick={goToNext}
+            style={{ padding: '10px 15px', borderRadius: '8px', border: 'none', backgroundColor: '#007bff', color: 'white' }}
+          >
+            next →
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '20px' }}>
-        <img src={meal.strMealThumb} alt={meal.strMeal} width="300" />
-        <div>
-          <h1>{meal.strMeal}</h1>
-          <p>category: {meal.strCategory}</p>
-          <p>area: {meal.strArea}</p>
+      <div style={{ display: 'flex', gap: '30px', justifyContent: 'center', alignItems: 'center', maxWidth: '800px', margin: '0 auto' }}>
+        <img src={meal.strMealThumb} alt={meal.strMeal} width="300" style={{ borderRadius: '12px' }} />
+        <div style={{ textAlign: 'left' }}>
+          <h1 style={{ margin: '0 0 15px 0' }}>{meal.strMeal}</h1>
+          <p style={{ margin: '8px 0' }}>category: {meal.strCategory}</p>
+          <p style={{ margin: '8px 0' }}>area: {meal.strArea}</p>
         </div>
       </div>
 
       {ingredients.length > 0 && (
-        <div>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h2>ingredients</h2>
-          <div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '10px',
+            marginTop: '20px'
+          }}>
             {ingredients.map((item, index) => (
-              <div key={index} style={{ border: '1px solid #ccc', padding: '5px', margin: '5px' }}>
+              <div key={index} style={{ 
+                border: '1px solid #ccc', 
+                padding: '10px', 
+                borderRadius: '8px', 
+                backgroundColor: '#f8f9fa',
+                textAlign: 'left'
+              }}>
                 <strong>{item.ingredient}</strong>
                 {item.measure && <span> - {item.measure}</span>}
               </div>
@@ -403,11 +482,18 @@ const DetailView = () => {
       )}
 
       {meal.strInstructions && (
-        <div>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h2>instructions</h2>
-          <div style={{ border: '1px solid #ccc', padding: '10px' }}>
+          <div style={{ 
+            border: '1px solid #ccc', 
+            padding: '20px', 
+            borderRadius: '12px', 
+            backgroundColor: '#f8f9fa',
+            marginTop: '20px',
+            textAlign: 'left'
+          }}>
             {meal.strInstructions.split('\n').map((paragraph, index) => (
-              paragraph.trim() && <p key={index}>{paragraph.trim()}</p>
+              paragraph.trim() && <p key={index} style={{ margin: '0 0 10px 0' }}>{paragraph.trim()}</p>
             ))}
           </div>
         </div>
@@ -419,9 +505,37 @@ function App() {
   return (
     <BrowserRouter basename="/mp2">
       <div>
-        <nav style={{ padding: '20px', borderBottom: '1px solid #ccc' }}>
-          <Link to="/" style={{ marginRight: '20px' }}>list view</Link>
-          <Link to="/gallery">gallery view</Link>
+        <nav style={{ 
+          padding: '20px', 
+          borderBottom: '1px solid #ccc', 
+          textAlign: 'center',
+          backgroundColor: '#f8f9fa'
+        }}>
+          <Link 
+            to="/" 
+            style={{ 
+              marginRight: '20px', 
+              padding: '10px 20px', 
+              borderRadius: '8px', 
+              backgroundColor: '#007bff', 
+              color: 'white', 
+              textDecoration: 'none' 
+            }}
+          >
+            list view
+          </Link>
+          <Link 
+            to="/gallery"
+            style={{ 
+              padding: '10px 20px', 
+              borderRadius: '8px', 
+              backgroundColor: '#28a745', 
+              color: 'white', 
+              textDecoration: 'none' 
+            }}
+          >
+            gallery view
+          </Link>
         </nav>
 
         <Routes>
